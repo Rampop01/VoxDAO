@@ -80,7 +80,7 @@ Pending  ──>  Active  ──>  Ended  ──>  Finalized  ──>  Executed
 * **Proposal Explainer:** Beginner-friendly plain-English breakdown of technical parameters and execution calls.
 * **Governance Q&A:** Queries live smart-contract state to answer questions like *"Am I eligible to vote?"*, *"How much voting power do I have?"*, and *"When does this proposal end?"*.
 * **Proposal Comparison:** Impartial side-by-side comparison of proposals preserving voter autonomy.
-* **Clear Badge Separation:** Verified on-chain data displays with an emerald/cyan badge; AI interpretations display with a purple AI spark badge.
+* **Clear Badge Separation:** Verified on-chain data displays with verified state badges; AI interpretations display with clear AI badges.
 
 ---
 

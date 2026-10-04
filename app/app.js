@@ -189,7 +189,7 @@ function updateWalletUI() {
   const netName = document.getElementById("networkNameDisplay");
 
   if (state.userAddress) {
-    btn.innerHTML = `<span>🟢 ${truncateAddress(state.userAddress)}</span>`;
+    btn.innerHTML = `<span>${truncateAddress(state.userAddress)}</span>`;
     btn.classList.remove("btn-primary");
     btn.classList.add("btn-secondary");
 
@@ -201,7 +201,7 @@ function updateWalletUI() {
       netName.innerText = `Chain ${state.userChainId} (Switch)`;
     }
   } else {
-    btn.innerHTML = `<span>🔌 Connect Wallet</span>`;
+    btn.innerHTML = `<span>Connect Wallet</span>`;
     btn.classList.add("btn-primary");
     btn.classList.remove("btn-secondary");
     netDot.className = "status-dot";
@@ -232,7 +232,7 @@ async function refreshUserData() {
     const delegateText = isSelfDelegated
       ? "Delegated to Self"
       : delegatee === ethers.ZeroAddress
-      ? "⚠️ Not Delegated (0 Power)"
+      ? "Not Delegated (0 Power)"
       : `Delegated to ${truncateAddress(delegatee)}`;
     
     document.getElementById("metricUserDelegate").innerText = delegateText;
@@ -260,6 +260,14 @@ async function loadDAOData() {
     document.getElementById("metricQuorum").innerText = `${formatNumber(quorumFloor)} VOX`;
     document.getElementById("metricTreasuryBalance").innerText = `${Number(treasuryBal).toFixed(2)} BOT`;
 
+    // Populate Landing Page Stats
+    const landingProps = document.getElementById("landingMetricProposals");
+    const landingTreasury = document.getElementById("landingMetricTreasury");
+    const landingQuorum = document.getElementById("landingMetricQuorum");
+    if (landingProps) landingProps.innerText = totalProps.toString();
+    if (landingTreasury) landingTreasury.innerText = `${Number(treasuryBal).toFixed(2)} BOT`;
+    if (landingQuorum) landingQuorum.innerText = `${formatNumber(quorumFloor)} VOX`;
+
     // Direct View: getProposals(0, 50)
     const [propList, count] = await dao.getProposals(0, 50);
     state.proposals = propList.map((p) => formatProposalStruct(p));
@@ -270,7 +278,7 @@ async function loadDAOData() {
     console.error("Failed to load DAO data from BotChain:", err);
     document.getElementById("proposalsList").innerHTML = `
       <div style="text-align: center; padding: 40px; background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-subtle);">
-        <p style="color: var(--accent-coral);">⚠️ Failed to query BotChain smart contract directly.</p>
+        <p style="color: var(--indicator-fail); font-weight: 600;">Failed to query BotChain smart contract directly.</p>
         <p style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">Verify RPC connectivity to ${BOTCHAIN_TESTNET.rpcUrl}</p>
         <button class="btn-secondary" onclick="loadDAOData()" style="margin-top: 14px;">Try Again</button>
       </div>
@@ -354,16 +362,16 @@ function renderProposals() {
         statusLabel = "Canceled";
       } else if (p.executed) {
         statusClass = "executed";
-        statusLabel = "Executed ⚡";
+        statusLabel = "Executed";
       } else if (p.finalized) {
         statusClass = p.passed ? "succeeded" : "defeated";
-        statusLabel = p.passed ? "Passed ✓" : "Defeated ✗";
+        statusLabel = p.passed ? "Passed" : "Defeated";
       } else if (now < p.startTime) {
         statusClass = "pending";
         statusLabel = "Pending";
       } else if (now <= p.endTime) {
         statusClass = "active";
-        statusLabel = "Active 🟢";
+        statusLabel = "Active";
       } else {
         statusClass = "pending";
         statusLabel = "Ended (Needs Finalization)";
@@ -393,15 +401,15 @@ function renderProposals() {
               <div class="vote-bar-segment segment-abstain" style="width: ${pctAbstain}%;"></div>
             </div>
             <div class="vote-stats-row">
-              <span class="vote-stat dot-for">✅ For: ${formatNumber(forV)} VOX (${pctFor}%)</span>
-              <span class="vote-stat dot-against">❌ Against: ${formatNumber(againstV)} VOX (${pctAgainst}%)</span>
-              <span class="vote-stat dot-abstain">⚪ Abstain: ${formatNumber(abstainV)} VOX (${pctAbstain}%)</span>
+              <span class="vote-stat dot-for">For: ${formatNumber(forV)} VOX (${pctFor}%)</span>
+              <span class="vote-stat dot-against">Against: ${formatNumber(againstV)} VOX (${pctAgainst}%)</span>
+              <span class="vote-stat dot-abstain">Abstain: ${formatNumber(abstainV)} VOX (${pctAbstain}%)</span>
             </div>
           </div>
 
           <div class="card-footer">
-            <span>Quorum: <strong>${formatNumber(totalV)} / ${formatNumber(quorumVal)} VOX</strong> ${quorumMet ? "✓ Reached" : "(Pending)"}</span>
-            <span>⏱️ ${timeLeftText}</span>
+            <span>Quorum: <strong>${formatNumber(totalV)} / ${formatNumber(quorumVal)} VOX</strong> ${quorumMet ? "[Reached]" : "[Pending]"}</span>
+            <span>${timeLeftText}</span>
           </div>
         </div>
       `;
@@ -447,7 +455,7 @@ async function openProposalModal(proposalId) {
     statusBadge.innerText = "Executed";
   } else if (prop.finalized) {
     statusBadge.className = prop.passed ? "status-badge succeeded" : "status-badge defeated";
-    statusBadge.innerText = prop.passed ? "Passed ✓" : "Defeated ✗";
+    statusBadge.innerText = prop.passed ? "Passed" : "Defeated";
   } else if (isActive) {
     statusBadge.className = "status-badge active";
     statusBadge.innerText = "Active";
@@ -468,7 +476,7 @@ async function openProposalModal(proposalId) {
     document.getElementById("modalActionTarget").innerText = prop.target;
     document.getElementById("modalActionValue").innerText = `${prop.value} BOT`;
     document.getElementById("modalActionStatus").innerText = prop.executed
-      ? "Status: Executed on BotChain ✓"
+      ? "Status: Executed on BotChain"
       : prop.passed
       ? "Status: Passed and ready to execute"
       : "Status: Execution contingent upon passing";
@@ -518,8 +526,8 @@ function updateModalVoteBars(prop) {
   const quorumVal = Number(prop.quorum);
   const quorumMet = totalV >= quorumVal;
   const qStatus = document.getElementById("modalQuorumStatus");
-  qStatus.innerText = quorumMet ? "Quorum Reached ✓" : "Quorum Not Reached";
-  qStatus.style.color = quorumMet ? "var(--accent-emerald)" : "var(--accent-amber)";
+  qStatus.innerText = quorumMet ? "Quorum Reached" : "Quorum Not Reached";
+  qStatus.style.color = quorumMet ? "var(--chrome-pure)" : "var(--chrome-dim)";
 }
 
 async function updateModalUserEligibility(prop) {
@@ -558,7 +566,7 @@ async function updateModalUserEligibility(prop) {
       receiptText.innerHTML = `You voted <strong>${supportName}</strong> with <strong>${formatNumber(ethers.formatEther(receipt.weight))} VOX</strong> voting power.${receipt.reason ? `<br><em>"${escapeHTML(receipt.reason)}"</em>` : ""}`;
       
       voteBtn.disabled = true;
-      voteBtn.innerText = "✓ Vote Already Recorded on BotChain";
+      voteBtn.innerText = "Vote Already Recorded on BotChain";
     } else {
       receiptCard.style.display = "none";
       if (!isActive) {
@@ -717,7 +725,7 @@ async function handleCreateProposal(e) {
     showToast("success", "Proposal Created On-Chain!", `Proposal confirmed in block #${receipt.blockNumber}`);
 
     btn.disabled = false;
-    btn.innerText = "🚀 Sign & Submit Proposal to BotChain";
+    btn.innerText = "Sign & Submit Proposal to BotChain";
 
     // Clear form and switch to proposals tab
     document.getElementById("createProposalForm").reset();
@@ -728,7 +736,7 @@ async function handleCreateProposal(e) {
     showToast("error", "Creation Failed", decodeContractError(err));
     const btn = document.getElementById("submitProposalBtn");
     btn.disabled = false;
-    btn.innerText = "🚀 Sign & Submit Proposal to BotChain";
+    btn.innerText = "Sign & Submit Proposal to BotChain";
   }
 }
 
@@ -844,10 +852,10 @@ async function handleAssistantQuery(query) {
     if (power >= 1) {
       appendChatMessage(
         "assistant",
-        `🔍 <strong>Verified On-Chain State:</strong><br>
+        `<strong>Verified On-Chain State:</strong><br>
         Connected Wallet: <code>${state.userAddress}</code><br>
         Active Voting Power: <strong>${formatNumber(power)} VOX</strong><br>
-        Eligibility Status: <span style="color: var(--accent-emerald); font-weight: 700;">ELIGIBLE</span> for active proposals.<br><br>
+        Eligibility Status: <span style="color: var(--chrome-pure); font-weight: 700;">ELIGIBLE</span> for active proposals.<br><br>
         <em>Note: Voting power for each proposal is locked at its specific start block snapshot.</em>`,
         true,
         "Verified State"
@@ -855,11 +863,11 @@ async function handleAssistantQuery(query) {
     } else {
       appendChatMessage(
         "assistant",
-        `🔍 <strong>Verified On-Chain State:</strong><br>
+        `<strong>Verified On-Chain State:</strong><br>
         Connected Wallet: <code>${state.userAddress}</code><br>
         Voting Power: <strong>0 VOX</strong><br>
-        Status: <span style="color: var(--accent-coral); font-weight: 700;">INELIGIBLE</span> (Minimum 1 VOX required).<br><br>
-        💡 <em>Action: Visit the <a href="#" onclick="switchTab('faucetTab')" style="color: var(--accent-cyan);">Faucet Tab</a> to claim 1,000 VOX test tokens and auto-delegate power!</em>`,
+        Status: <span style="color: var(--indicator-fail); font-weight: 700;">INELIGIBLE</span> (Minimum 1 VOX required).<br><br>
+        <em>Action: Visit the <a href="#" onclick="showAppView('faucetTab')" style="color: var(--chrome-pure); text-decoration: underline;">Faucet Tab</a> to claim 1,000 VOX test tokens and auto-delegate power!</em>`,
         true,
         "Verified State"
       );
@@ -875,7 +883,7 @@ async function handleAssistantQuery(query) {
     }
     appendChatMessage(
       "assistant",
-      `⚡ <strong>Voting Power Analysis:</strong><br>
+      `<strong>Voting Power Analysis:</strong><br>
       • Current VOX Token Balance: <strong>${state.userVoxBalance} VOX</strong><br>
       • Active Voting Power (Delegated): <strong>${state.userVotingPower} VOX</strong><br>
       • Native Gas Balance: <strong>${state.userNativeBalance} BOT</strong><br><br>
@@ -892,7 +900,7 @@ async function handleAssistantQuery(query) {
     if (p1) {
       appendChatMessage(
         "assistant",
-        `📋 <strong>Objective Breakdown of Proposal #1:</strong><br><br>
+        `<strong>Objective Breakdown of Proposal #1:</strong><br><br>
         <strong>Title:</strong> ${escapeHTML(p1.title)}<br>
         <strong>Category:</strong> ${p1.category}<br>
         <strong>What is Proposed:</strong> Allocate 0.05 BOT from the DAO treasury to support open-source developer tooling and autonomous agents on BotChain.<br>
@@ -910,7 +918,7 @@ async function handleAssistantQuery(query) {
   if (lower.includes("vote against") || lower.includes("vote no")) {
     appendChatMessage(
       "assistant",
-      `⚖️ <strong>Governance Mechanism Explanation:</strong><br>
+      `<strong>Governance Mechanism Explanation:</strong><br>
       • When you vote <strong>AGAINST</strong>, your snapshot voting power is added to the proposal's <code>againstVotes</code> tally.<br>
       • Your vote <em>still counts</em> toward fulfilling the required quorum (${document.getElementById("metricQuorum").innerText}), ensuring sufficient community participation.<br>
       • If <code>againstVotes ≥ forVotes</code> at deadline, the proposal is marked <strong>Defeated</strong> and any treasury transfers will be blocked permanently.`,
@@ -924,7 +932,7 @@ async function handleAssistantQuery(query) {
   if (lower.includes("snapshot") || lower.includes("flash") || lower.includes("checkpoint")) {
     appendChatMessage(
       "assistant",
-      `🔒 <strong>Snapshot Security & Checkpoint Architecture:</strong><br>
+      `<strong>Snapshot Security & Checkpoint Architecture:</strong><br>
       VoxDAO uses OpenZeppelin's <code>ERC20Votes</code> checkpoints. When a proposal is created at block <em>N</em>, the contract locks the snapshot timepoint at <code>block.number - 1</code>.<br><br>
       <strong>Why this matters:</strong><br>
       1. Prevents Flash-Loan Attacks: Borrowing millions in tokens during voting grants ZERO voting power on existing proposals.<br>
@@ -980,7 +988,7 @@ function buildProposalDraft(idea) {
 
   // Trigger preview update
   updateLivePreview();
-  showToast("success", "Draft Generated ✨", "Vox Assistant generated a structured proposal draft. Review and edit before submitting.");
+  showToast("success", "Draft Generated", "Vox Assistant generated a structured proposal draft. Review and edit before submitting.");
 }
 
 function explainActiveModalProposal() {
@@ -989,7 +997,7 @@ function explainActiveModalProposal() {
 
   const explBox = document.getElementById("modalAiExplanation");
   explBox.innerHTML = `
-    <strong>📋 AI Summary:</strong><br>
+    <strong>AI Summary:</strong><br>
     • <strong>Action:</strong> ${escapeHTML(prop.title)} (${prop.category})<br>
     • <strong>Target Effect:</strong> ${prop.value > 0 ? `Transfers ${prop.value} native BOT to ${truncateAddress(prop.target)} upon passing.` : "Updates community consensus with no immediate financial transfer."}<br>
     • <strong>Quorum Requirement:</strong> ${formatNumber(prop.quorum)} VOX total participation needed.<br>
@@ -1015,7 +1023,7 @@ function updateLivePreview() {
   document.getElementById("previewProposer").innerText = state.userAddress ? truncateAddress(state.userAddress) : "Connected Wallet";
 
   if (target && value) {
-    document.getElementById("previewActionText").innerText = `⚡ Action: ${value} BOT to ${truncateAddress(target)}`;
+    document.getElementById("previewActionText").innerText = `Action: ${value} BOT to ${truncateAddress(target)}`;
   } else {
     document.getElementById("previewActionText").innerText = "No action attached";
   }
@@ -1023,17 +1031,23 @@ function updateLivePreview() {
 
 // --- Event Listeners & UI Helpers ---
 function setupEventListeners() {
-  // Navigation Tabs
-  document.querySelectorAll(".nav-tab-btn").forEach((btn) => {
+  // Navigation Tabs inside App View
+  document.querySelectorAll("#appNavTabs .nav-tab-btn[data-tab]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const tabId = btn.getAttribute("data-tab");
       switchTab(tabId);
     });
   });
 
-  document.getElementById("brandHomeBtn").addEventListener("click", (e) => {
+  // View Switchers: Landing View <-> Governance App View
+  document.getElementById("launchAppTopBtn")?.addEventListener("click", () => showAppView("proposalsTab"));
+  document.getElementById("enterAppHeroBtn")?.addEventListener("click", () => showAppView("proposalsTab"));
+  document.getElementById("landingEnterAppBtn")?.addEventListener("click", () => showAppView("proposalsTab"));
+  document.getElementById("navReturnLandingBtn")?.addEventListener("click", () => showLandingView());
+  document.getElementById("backToLandingBtn")?.addEventListener("click", () => showLandingView());
+  document.getElementById("brandLogoBtn")?.addEventListener("click", (e) => {
     e.preventDefault();
-    switchTab("proposalsTab");
+    showLandingView();
   });
 
   // Wallet Connect
@@ -1118,6 +1132,41 @@ function setupEventListeners() {
   }
 }
 
+function showLandingView() {
+  const landing = document.getElementById("landingView");
+  const app = document.getElementById("appView");
+  const landingNav = document.getElementById("landingNavLinks");
+  const appNav = document.getElementById("appNavTabs");
+  const launchBtn = document.getElementById("launchAppTopBtn");
+  const connectBtn = document.getElementById("connectWalletBtn");
+
+  if (landing) landing.style.display = "block";
+  if (app) app.style.display = "none";
+  if (landingNav) landingNav.style.display = "flex";
+  if (appNav) appNav.style.display = "none";
+  if (launchBtn) launchBtn.style.display = "inline-flex";
+  if (connectBtn) connectBtn.style.display = "none";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function showAppView(defaultTab = "proposalsTab") {
+  const landing = document.getElementById("landingView");
+  const app = document.getElementById("appView");
+  const landingNav = document.getElementById("landingNavLinks");
+  const appNav = document.getElementById("appNavTabs");
+  const launchBtn = document.getElementById("launchAppTopBtn");
+  const connectBtn = document.getElementById("connectWalletBtn");
+
+  if (landing) landing.style.display = "none";
+  if (app) app.style.display = "block";
+  if (landingNav) landingNav.style.display = "none";
+  if (appNav) appNav.style.display = "flex";
+  if (launchBtn) launchBtn.style.display = "none";
+  if (connectBtn) connectBtn.style.display = "inline-flex";
+  switchTab(defaultTab);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 function selectVoteOption(option) {
   state.selectedVoteOption = option;
   resetVoteButtons();
@@ -1138,13 +1187,18 @@ function selectVoteOption(option) {
 }
 
 function switchTab(tabId) {
-  document.querySelectorAll(".nav-tab-btn").forEach((btn) => {
+  if (!tabId) return;
+  document.querySelectorAll("#appNavTabs .nav-tab-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.getAttribute("data-tab") === tabId);
   });
   document.querySelectorAll(".tab-pane").forEach((pane) => {
     pane.style.display = pane.id === tabId ? "block" : "none";
   });
 }
+
+window.showLandingView = showLandingView;
+window.showAppView = showAppView;
+window.switchTab = switchTab;
 
 // --- Utilities ---
 function truncateAddress(addr) {
@@ -1202,9 +1256,13 @@ function showToast(type, title, message) {
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
 
-  const icon = type === "success" ? "✅" : type === "error" ? "❌" : "⏳";
+  const indicator = type === "success"
+    ? `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#ffffff; box-shadow:0 0 8px rgba(255,255,255,0.8);"></span>`
+    : type === "error"
+    ? `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#ef4444; box-shadow:0 0 8px rgba(239,68,68,0.8);"></span>`
+    : `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#94a3b8;"></span>`;
   toast.innerHTML = `
-    <div style="font-size: 18px;">${icon}</div>
+    <div style="display:flex; align-items:center; padding-top:4px;">${indicator}</div>
     <div style="flex: 1;">
       <div class="toast-title">${escapeHTML(title)}</div>
       <div class="toast-msg">${escapeHTML(message)}</div>

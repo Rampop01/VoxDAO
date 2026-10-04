@@ -13,13 +13,65 @@
   
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Immediate Global View Switcher Controller -->
+  <script>
+    function showLandingView() {
+      var landing = document.getElementById("landingView");
+      var app = document.getElementById("appView");
+      var landingNav = document.getElementById("landingNavLinks");
+      var appNav = document.getElementById("appNavTabs");
+      var launchBtn = document.getElementById("launchAppTopBtn");
+      var connectBtn = document.getElementById("connectWalletBtn");
+      if (landing) landing.style.display = "block";
+      if (app) app.style.display = "none";
+      if (landingNav) landingNav.style.display = "flex";
+      if (appNav) appNav.style.display = "none";
+      if (launchBtn) launchBtn.style.display = "inline-flex";
+      if (connectBtn) connectBtn.style.display = "none";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showAppView(tabId) {
+      tabId = tabId || "proposalsTab";
+      var landing = document.getElementById("landingView");
+      var app = document.getElementById("appView");
+      var landingNav = document.getElementById("landingNavLinks");
+      var appNav = document.getElementById("appNavTabs");
+      var launchBtn = document.getElementById("launchAppTopBtn");
+      var connectBtn = document.getElementById("connectWalletBtn");
+      if (landing) landing.style.display = "none";
+      if (app) app.style.display = "block";
+      if (landingNav) landingNav.style.display = "none";
+      if (appNav) appNav.style.display = "flex";
+      if (launchBtn) launchBtn.style.display = "none";
+      if (connectBtn) connectBtn.style.display = "inline-flex";
+      if (window.switchTab) {
+        window.switchTab(tabId);
+      } else {
+        document.querySelectorAll(".tab-pane").forEach(function (pane) {
+          pane.style.display = pane.id === tabId ? "block" : "none";
+        });
+        document.querySelectorAll("#appNavTabs .nav-tab-btn").forEach(function (btn) {
+          btn.classList.toggle("active", btn.getAttribute("data-tab") === tabId);
+        });
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    window.showLandingView = showLandingView;
+    window.showAppView = showAppView;
+  </script>
 </head>
 <body>
+
+  <!-- Cinematic Background Canvas -->
+  <canvas id="cinematicBgCanvas" class="cinematic-canvas"></canvas>
 
   <!-- Top Sticky Navigation Bar -->
   <header class="navbar">
     <div class="container nav-content">
-      <div class="brand-wrapper" id="brandLogoBtn">
+      <div class="brand-wrapper" id="brandLogoBtn" onclick="showLandingView()" title="VoxDAO Overview">
         <div class="brand-icon">V</div>
         <div class="brand-text">
           <h1>VoxDAO <span class="chain-badge" id="networkPillText">BotChain</span></h1>
@@ -29,19 +81,19 @@
 
       <!-- App Mode Tabs (Visible in Governance App) -->
       <nav class="nav-tabs" id="appNavTabs" style="display: none;">
-        <button class="nav-tab-btn" id="navReturnLandingBtn">
+        <button class="nav-tab-btn" id="navReturnLandingBtn" onclick="showLandingView()">
           <span>Overview</span>
         </button>
-        <button class="nav-tab-btn active" data-tab="proposalsTab" id="tabBtnProposals">
+        <button class="nav-tab-btn active" data-tab="proposalsTab" id="tabBtnProposals" onclick="switchTab('proposalsTab')">
           <span>Proposals</span>
         </button>
-        <button class="nav-tab-btn" data-tab="createTab" id="tabBtnCreate">
+        <button class="nav-tab-btn" data-tab="createTab" id="tabBtnCreate" onclick="switchTab('createTab')">
           <span>New Proposal</span>
         </button>
-        <button class="nav-tab-btn" data-tab="faucetTab" id="tabBtnFaucet">
+        <button class="nav-tab-btn" data-tab="faucetTab" id="tabBtnFaucet" onclick="switchTab('faucetTab')">
           <span>Faucet & Power</span>
         </button>
-        <button class="nav-tab-btn" data-tab="assistantTab" id="tabBtnAssistant">
+        <button class="nav-tab-btn" data-tab="assistantTab" id="tabBtnAssistant" onclick="switchTab('assistantTab')">
           <span>Vox Assistant</span>
           <span class="tab-badge">AI</span>
         </button>
@@ -50,8 +102,9 @@
       <!-- Landing Navigation Links (Visible on Landing Page) -->
       <nav class="nav-tabs" id="landingNavLinks">
         <a href="#features" class="nav-tab-btn" style="text-decoration: none;">Features</a>
-        <a href="#architecture" class="nav-tab-btn" style="text-decoration: none;">Architecture</a>
-        <a href="https://scan.bohr.life/address/0xc420dd65a7b3aa2c231f85ae9de7d7207013775c" target="_blank" rel="noopener noreferrer" class="nav-tab-btn" style="text-decoration: none;">Contracts ↗</a>
+        <a href="#architecture" class="nav-tab-btn" style="text-decoration: none;">Metrics</a>
+        <a href="#workflow" class="nav-tab-btn" style="text-decoration: none;">Lifecycle</a>
+        <a href="#contracts" class="nav-tab-btn" style="text-decoration: none;">Contracts</a>
       </nav>
 
       <!-- Header Actions -->
@@ -60,7 +113,7 @@
           <span class="status-dot" id="statusDot"></span>
           <span id="networkNameDisplay">BotChain (968)</span>
         </div>
-        <button class="btn-primary" id="launchAppTopBtn">
+        <button class="btn-primary" id="launchAppTopBtn" onclick="showAppView('proposalsTab')">
           Launch App
         </button>
         <button class="btn-primary" id="connectWalletBtn" style="display: none;">
@@ -85,7 +138,7 @@
         </p>
 
         <div class="landing-cta-group">
-          <button class="btn-primary" id="enterAppHeroBtn" style="padding: 12px 28px; font-size: 14px;">
+          <button class="btn-primary" id="enterAppHeroBtn" onclick="showAppView('proposalsTab')" style="padding: 12px 28px; font-size: 14px;">
             Enter Governance App
           </button>
           <a href="https://scan.bohr.life/address/0xc420dd65a7b3aa2c231f85ae9de7d7207013775c" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="text-decoration: none; padding: 12px 24px;">
@@ -128,7 +181,7 @@
             <h3 style="font-size: 20px; font-weight: 800; color: var(--chrome-pure);">Live Protocol Metrics</h3>
             <p style="font-size: 13px; color: var(--chrome-dim);">Queried directly from BotChain smart contracts</p>
           </div>
-          <button class="btn-secondary" id="landingEnterAppBtn">
+          <button class="btn-secondary" id="landingEnterAppBtn" onclick="showAppView('proposalsTab')">
             Open Governance Dashboard
           </button>
         </div>
@@ -242,7 +295,7 @@
         <button class="btn-secondary" id="refreshStatsBtn" style="font-size: 12px; padding: 6px 14px;">
           Refresh State
         </button>
-        <button class="btn-secondary" id="backToLandingBtn" style="font-size: 12px; padding: 6px 14px;">
+        <button class="btn-secondary" id="backToLandingBtn" onclick="showLandingView()" style="font-size: 12px; padding: 6px 14px;">
           Return to Overview
         </button>
       </div>
@@ -693,6 +746,12 @@
 
   <!-- Scripts -->
   <script src="vendor/ethers.umd.min.js"></script>
+  <script>
+    if (!window.ethers) {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"><\\/script>');
+    }
+  </script>
+  <script src="cinematic-bg.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -91,13 +91,31 @@ const state = {
 
 // --- Initialization ---
 document.addEventListener("DOMContentLoaded", async () => {
-  initProviders();
-  setupEventListeners();
-  await loadDAOData();
+  try {
+    initProviders();
+  } catch (e) {
+    console.warn("Provider initialization deferred:", e);
+  }
+
+  try {
+    setupEventListeners();
+  } catch (e) {
+    console.error("Setup event listeners error:", e);
+  }
+
+  try {
+    await loadDAOData();
+  } catch (e) {
+    console.error("Load DAO data error:", e);
+  }
 
   // If wallet already connected
-  if (window.ethereum && window.ethereum.selectedAddress) {
-    await connectWallet();
+  try {
+    if (window.ethereum && window.ethereum.selectedAddress) {
+      await connectWallet();
+    }
+  } catch (e) {
+    console.warn("Auto-connect skipped:", e);
   }
 });
 

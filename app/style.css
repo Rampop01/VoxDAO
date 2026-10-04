@@ -59,11 +59,10 @@ html {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
   pointer-events: none;
-  background-color: #000000;
 }
 
 [id] {
@@ -79,7 +78,58 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Ensure UI elements sit above the canvas at z-index: 0 */
+.navbar,
+.landing-view,
+.app-view,
+.footer,
+.modal-backdrop,
+.toast-container {
+  position: relative;
+  z-index: 10;
+}
+
+/* --- Deterministic View Switch Architecture --- */
+.landing-view {
+  display: block;
+}
+.app-view {
+  display: none;
+}
+#appNavTabs {
+  display: none;
+}
+#landingNavLinks {
+  display: flex;
+}
+#launchAppTopBtn {
+  display: inline-flex;
+}
+#connectWalletBtn {
+  display: none;
+}
+
+body.app-mode .landing-view {
+  display: none !important;
+}
+body.app-mode .app-view {
+  display: block !important;
+}
+body.app-mode #landingNavLinks {
+  display: none !important;
+}
+body.app-mode #appNavTabs {
+  display: flex !important;
+}
+body.app-mode #launchAppTopBtn {
+  display: none !important;
+}
+body.app-mode #connectWalletBtn {
+  display: inline-flex !important;
 }
 
 .container {

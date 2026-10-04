@@ -16,8 +16,8 @@
   let animationFrameId = null;
 
   // Configuration
-  const PARTICLE_COUNT = 55;
-  const MAX_DISTANCE = 140;
+  const PARTICLE_COUNT = 65;
+  const MAX_DISTANCE = 150;
   const particles = [];
   const mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000, active: false };
 
@@ -44,12 +44,12 @@
     reset(initial = false) {
       this.x = initial ? Math.random() * width : Math.random() < 0.5 ? 0 : width;
       this.y = initial ? Math.random() * height : Math.random() * height;
-      this.vx = (Math.random() - 0.5) * 0.45;
-      this.vy = (Math.random() - 0.5) * 0.45;
-      this.radius = Math.random() * 1.8 + 0.8;
-      this.baseAlpha = Math.random() * 0.45 + 0.25;
+      this.vx = (Math.random() - 0.5) * 0.5;
+      this.vy = (Math.random() - 0.5) * 0.5;
+      this.radius = Math.random() * 2.2 + 1.0;
+      this.baseAlpha = Math.random() * 0.4 + 0.45;
       this.alpha = this.baseAlpha;
-      this.pulseSpeed = Math.random() * 0.02 + 0.008;
+      this.pulseSpeed = Math.random() * 0.02 + 0.01;
       this.pulsePhase = Math.random() * Math.PI * 2;
       this.depth = Math.random() * 0.8 + 0.2; // Parallax depth factor
     }
@@ -58,42 +58,49 @@
       this.x += this.vx;
       this.y += this.vy;
 
-      // Mouse gentle repulsion / interaction
+      // Mouse gentle interaction
       if (mouse.active) {
         const dx = this.x - mouse.x;
         const dy = this.y - mouse.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 150 && dist > 0) {
-          const force = ((150 - dist) / 150) * 0.8 * this.depth;
+        if (dist < 180 && dist > 0) {
+          const force = ((180 - dist) / 180) * 1.2 * this.depth;
           this.x += (dx / dist) * force;
           this.y += (dy / dist) * force;
         }
       }
 
       // Wrap edges smoothly
-      if (this.x < -20) this.x = width + 20;
-      if (this.x > width + 20) this.x = -20;
-      if (this.y < -20) this.y = height + 20;
-      if (this.y > height + 20) this.y = -20;
+      if (this.x < -30) this.x = width + 30;
+      if (this.x > width + 30) this.x = -30;
+      if (this.y < -30) this.y = height + 30;
+      if (this.y > height + 30) this.y = -30;
 
-      // Subtle breathing pulse
+      // Breathing pulse
       this.pulsePhase += this.pulseSpeed;
-      this.alpha = this.baseAlpha + Math.sin(this.pulsePhase) * 0.18;
-      if (this.alpha < 0.1) this.alpha = 0.1;
-      if (this.alpha > 0.85) this.alpha = 0.85;
+      this.alpha = this.baseAlpha + Math.sin(this.pulsePhase) * 0.22;
+      if (this.alpha < 0.2) this.alpha = 0.2;
+      if (this.alpha > 0.95) this.alpha = 0.95;
     }
 
     draw() {
+      // Core particle
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
       ctx.fill();
 
-      // Specular glow for prominent nodes
-      if (this.radius > 1.8) {
+      // Specular glowing halo
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius * 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha * 0.25})`;
+      ctx.fill();
+
+      // Large soft outer aura for prominent nodes
+      if (this.radius > 2.0) {
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius * 3.5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha * 0.18})`;
+        ctx.arc(this.x, this.y, this.radius * 7, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha * 0.08})`;
         ctx.fill();
       }
     }
@@ -119,12 +126,12 @@
         const dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < MAX_DISTANCE) {
-          const lineAlpha = (1 - dist / MAX_DISTANCE) * 0.14 * (p1.alpha + p2.alpha) * 0.5;
+          const lineAlpha = (1 - dist / MAX_DISTANCE) * 0.3 * (p1.alpha + p2.alpha) * 0.5;
           ctx.beginPath();
           ctx.moveTo(p1.x, p1.y);
           ctx.lineTo(p2.x, p2.y);
           ctx.strokeStyle = `rgba(255, 255, 255, ${lineAlpha})`;
-          ctx.lineWidth = 0.75;
+          ctx.lineWidth = 0.9;
           ctx.stroke();
         }
       }
@@ -138,9 +145,9 @@
     ctx.fillRect(0, 0, width, height);
 
     // 2. Slow breathing hero anamorphic spotlight
-    const heroGlowX = width * 0.5 + Math.sin(time * 0.0004) * (width * 0.15);
-    const heroGlowY = Math.min(height * 0.25, 220);
-    const glowRadius = Math.max(width * 0.55, 450);
+    const heroGlowX = width * 0.5 + Math.sin(time * 0.0003) * (width * 0.12);
+    const heroGlowY = Math.min(height * 0.22, 200);
+    const glowRadius = Math.max(width * 0.6, 500);
 
     const radialGrad = ctx.createRadialGradient(
       heroGlowX,
@@ -150,24 +157,43 @@
       heroGlowY,
       glowRadius
     );
-    radialGrad.addColorStop(0, "rgba(255, 255, 255, 0.055)");
-    radialGrad.addColorStop(0.35, "rgba(20, 24, 34, 0.45)");
-    radialGrad.addColorStop(0.7, "rgba(5, 7, 10, 0.85)");
+    radialGrad.addColorStop(0, "rgba(255, 255, 255, 0.09)");
+    radialGrad.addColorStop(0.3, "rgba(22, 28, 40, 0.55)");
+    radialGrad.addColorStop(0.65, "rgba(8, 11, 16, 0.9)");
     radialGrad.addColorStop(1, "#000000");
 
     ctx.fillStyle = radialGrad;
     ctx.fillRect(0, 0, width, height);
 
-    // 3. Subtle moving specular light beam across the top horizon
-    const beamProgress = (time * 0.00015) % 1;
-    const beamX = beamProgress * (width + 600) - 300;
-    const beamGrad = ctx.createLinearGradient(beamX - 350, 0, beamX + 350, 0);
-    beamGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
-    beamGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.03)");
-    beamGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+    // 3. Horizontal anamorphic lens flare line
+    const flareY = Math.min(height * 0.22, 200);
+    const flareGrad = ctx.createLinearGradient(0, flareY, width, flareY);
+    flareGrad.addColorStop(0, "rgba(255, 255, 255, 0)");
+    flareGrad.addColorStop(0.35, "rgba(255, 255, 255, 0.015)");
+    flareGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.08)");
+    flareGrad.addColorStop(0.65, "rgba(255, 255, 255, 0.015)");
+    flareGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
 
-    ctx.fillStyle = beamGrad;
-    ctx.fillRect(0, 0, width, Math.min(height, 500));
+    ctx.fillStyle = flareGrad;
+    ctx.fillRect(0, flareY - 1, width, 2);
+
+    // 4. Interactive cursor spotlight glow
+    if (mouse.active) {
+      const mouseGlow = ctx.createRadialGradient(
+        mouse.x,
+        mouse.y,
+        0,
+        mouse.x,
+        mouse.y,
+        320
+      );
+      mouseGlow.addColorStop(0, "rgba(255, 255, 255, 0.09)");
+      mouseGlow.addColorStop(0.45, "rgba(255, 255, 255, 0.025)");
+      mouseGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+      ctx.fillStyle = mouseGlow;
+      ctx.fillRect(0, 0, width, height);
+    }
   }
 
   // Animation Loop

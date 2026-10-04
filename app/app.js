@@ -1151,6 +1151,7 @@ function setupEventListeners() {
 }
 
 function showLandingView() {
+  if (document.body) document.body.classList.remove("app-mode");
   const landing = document.getElementById("landingView");
   const app = document.getElementById("appView");
   const landingNav = document.getElementById("landingNavLinks");
@@ -1168,6 +1169,7 @@ function showLandingView() {
 }
 
 function showAppView(defaultTab = "proposalsTab") {
+  if (document.body) document.body.classList.add("app-mode");
   const landing = document.getElementById("landingView");
   const app = document.getElementById("appView");
   const landingNav = document.getElementById("landingNavLinks");

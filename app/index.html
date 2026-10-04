@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VoxDAO — Your community. Your vote. On-chain.</title>
+  <meta name="description" content="VoxDAO is an on-chain governance platform on BotChain to create proposals, verify voting eligibility, vote transparently, and permanently verify finalized results." />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗳️</text></svg>">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-content">
+      <a href="#" class="brand-wrapper" id="brandHomeBtn">
+        <div class="brand-icon">V</div>
+        <div class="brand-text">
+          <h1>VoxDAO <span class="chain-badge" id="networkPillText">BotChain Testnet</span></h1>
+          <span class="brand-tagline">Your community. Your vote. On-chain.</span>
+        </div>
+      </a>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <button class="nav-tab-btn active" data-tab="proposalsTab" id="tabBtnProposals">
+          <span>🏛️ Proposals</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="createTab" id="tabBtnCreate">
+          <span>✍️ Create Proposal</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="faucetTab" id="tabBtnFaucet">
+          <span>💧 Faucet & Power</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="assistantTab" id="tabBtnAssistant">
+          <span>✨ Vox Assistant</span>
+          <span class="tab-badge">AI</span>
+        </button>
+      </nav>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <div class="network-pill" id="networkIndicator" title="Click to switch to BotChain Testnet">
+          <span class="status-dot" id="statusDot"></span>
+          <span id="networkNameDisplay">BotChain (968)</span>
+        </div>
+        <button class="btn-primary" id="connectWalletBtn">
+          <span>🔌 Connect Wallet</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="container" style="flex: 1; padding-top: 24px; padding-bottom: 60px;">
+
+    <!-- Hero Section / Space Overview -->
+    <section class="hero-section" id="heroSection">
+      <div class="hero-card">
+        <div class="hero-tag">⚡ BotChain Pioneer Governance Space</div>
+        <h2 class="hero-title">Decentralized Governance with <br><span class="gradient-text">Cryptographic Truth & AI Assistance</span></h2>
+        <p class="hero-desc">
+          VoxDAO permanently records community decisions on BotChain. Voting power is cryptographically snapshotted using ERC20Votes checkpoints to prevent flash-loan manipulation. AI assists you; humans govern.
+        </p>
+
+        <!-- Verified Contracts Chip -->
+        <div class="dao-contract-banner">
+          <div><strong>Verified On-Chain Contracts:</strong></div>
+          <div class="contract-chip">
+            <span>VoxDAO:</span>
+            <a href="https://scan.bohr.life/address/0xc420dd65a7b3aa2c231f85ae9de7d7207013775c" target="_blank" rel="noopener noreferrer" id="daoAddressLink">0xc420...775c ↗</a>
+          </div>
+          <div class="contract-chip">
+            <span>VOX Token:</span>
+            <a href="https://scan.bohr.life/address/0xce1d3e246ea627534c899651672fd7d2cddbab56" target="_blank" rel="noopener noreferrer" id="tokenAddressLink">0xce1d...ab56 ↗</a>
+          </div>
+          <button class="btn-secondary" id="refreshStatsBtn" style="padding: 4px 12px; font-size: 11px; margin-left: auto;">
+            🔄 Refresh On-Chain State
+          </button>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">🗳️ Total Proposals</div>
+            <div class="metric-value" id="metricTotalProposals">...</div>
+            <div class="metric-sub">Stored on BotChain</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">🟢 Active Voting</div>
+            <div class="metric-value" id="metricActiveProposals" style="color: var(--accent-emerald);">...</div>
+            <div class="metric-sub">Open for votes</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">💰 DAO Treasury</div>
+            <div class="metric-value" id="metricTreasuryBalance">... BOT</div>
+            <div class="metric-sub">Native BotChain balance</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">🎯 Quorum Floor</div>
+            <div class="metric-value" id="metricQuorum">... VOX</div>
+            <div class="metric-sub">Required per proposal</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">👤 Your Voting Power</div>
+            <div class="metric-value" id="metricUserPower" style="color: var(--accent-cyan);">0 VOX</div>
+            <div class="metric-sub" id="metricUserDelegate">Connect wallet</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: Proposals View -->
+    <section class="tab-pane active" id="proposalsTab">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span>Governance Proposals</span>
+          <span style="font-size: 14px; font-weight: normal; color: var(--text-muted);" id="proposalsCountLabel">(Loading...)</span>
+        </h2>
+
+        <div class="filter-bar">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="active">Active</button>
+          <button class="filter-btn" data-filter="passed">Passed</button>
+          <button class="filter-btn" data-filter="defeated">Defeated</button>
+          <button class="filter-btn" data-filter="finalized">Finalized</button>
+        </div>
+      </div>
+
+      <!-- Proposals List Grid -->
+      <div class="proposals-grid" id="proposalsList">
+        <div style="text-align: center; padding: 60px 20px; color: var(--text-muted); background: var(--bg-surface); border-radius: var(--radius-lg); border: 1px solid var(--border-subtle);">
+          <div style="font-size: 32px; margin-bottom: 12px;">⏳</div>
+          <p>Loading verified governance proposals directly from BotChain contracts...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: Create Proposal -->
+    <section class="tab-pane" id="createTab" style="display: none;">
+      <div class="section-header">
+        <h2 class="section-title">✍️ Submit On-Chain Governance Proposal</h2>
+        <span style="font-size: 13px; color: var(--text-muted);">Requires minimum 100 VOX voting power</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
+        
+        <!-- Form Left Column -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 28px;">
+          
+          <!-- AI Assistant Integration Inside Creator -->
+          <div class="ai-insight-box" style="margin-top: 0; margin-bottom: 24px;">
+            <div class="ai-badge">✨ Vox Assistant — Proposal Builder</div>
+            <p style="font-size: 13px; color: var(--text-main); margin-bottom: 12px;">
+              Describe your governance idea in plain language. Vox Assistant will structure a formal draft for you to review and customize.
+            </p>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" class="form-input" id="aiIdeaInput" placeholder="e.g., Spend 0.05 BOT to fund 2 community hackathon mentors..." />
+              <button class="btn-ai" id="aiDraftBtn" style="white-space: nowrap;">Build Draft</button>
+            </div>
+            <div class="ai-safety-note">
+              🛡️ AI Safety Rule: Vox Assistant drafts suggestions only. You must review, approve, and sign transactions with your wallet.
+            </div>
+          </div>
+
+          <form id="createProposalForm">
+            <div class="form-group">
+              <label class="form-label">Proposal Title *</label>
+              <input type="text" class="form-input" id="propTitle" placeholder="e.g. VIP-002: Upgrade Developer Documentation" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-select" id="propCategory">
+                <option value="Treasury">Treasury (Grant / Funding)</option>
+                <option value="Protocol">Protocol Parameter</option>
+                <option value="Community">Community Initiative</option>
+                <option value="General">General Governance</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description & Rationale *</label>
+              <textarea class="form-textarea" id="propDescription" placeholder="Explain what is proposed, why it matters, implementation milestones, and risk considerations..." required></textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div class="form-group">
+                <label class="form-label">Duration <small>(hours)</small></label>
+                <input type="number" class="form-input" id="propDurationHours" value="72" min="1" step="1" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Custom Quorum <small>(VOX)</small></label>
+                <input type="number" class="form-input" id="propQuorum" value="500" min="500" step="100" />
+              </div>
+            </div>
+
+            <!-- Optional Execution Fields -->
+            <div style="border-top: 1px solid var(--border-subtle); padding-top: 18px; margin-top: 10px;">
+              <label class="form-label" style="display: flex; justify-content: space-between;">
+                <span>On-Chain Action Execution <small>(Optional)</small></span>
+                <span style="font-size: 11px; color: var(--accent-cyan);">Passed proposals can execute automatically</span>
+              </label>
+
+              <div class="form-group">
+                <input type="text" class="form-input" id="propTarget" placeholder="Target contract/recipient address (0x...)" />
+              </div>
+              <div class="form-group">
+                <input type="text" class="form-input" id="propValue" placeholder="Native BOT transfer amount (e.g. 0.05)" />
+              </div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="submitProposalBtn" style="width: 100%; justify-content: center; margin-top: 12px;">
+              🚀 Sign & Submit Proposal to BotChain
+            </button>
+          </form>
+        </div>
+
+        <!-- Live Preview Right Column -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 28px;">
+          <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--accent-cyan);">
+            👁️ Live On-Chain Preview
+          </h3>
+
+          <div class="proposal-card" style="cursor: default; pointer-events: none;">
+            <div class="card-top">
+              <div class="card-meta">
+                <span class="category-tag" id="previewCategory">Treasury</span>
+                <span>Snapshot: Current Block</span>
+              </div>
+              <span class="status-badge pending">Pending</span>
+            </div>
+            <h3 class="proposal-title" id="previewTitle">Proposal Title Preview</h3>
+            <p class="proposal-snippet" id="previewDesc" style="-webkit-line-clamp: 4;">
+              Your detailed description and breakdown will render here for voters to read.
+            </p>
+            <div class="vote-stats-row">
+              <span>Required Quorum: <strong id="previewQuorumText">500 VOX</strong></span>
+              <span>Duration: <strong id="previewDurationText">72 hours</strong></span>
+            </div>
+            <div class="card-footer">
+              <span>Proposer: <strong id="previewProposer">Your Wallet</strong></span>
+              <span id="previewActionText">No action attached</span>
+            </div>
+          </div>
+
+          <div class="verification-box" style="margin-top: 20px;">
+            <div class="verification-icon">🛡️</div>
+            <div class="verification-text">
+              <strong>Cryptographic Snapshot Integrity</strong>
+              When submitted, BotChain will snapshot voting power at block <code>block.number - 1</code>. Any tokens bought after creation will have zero influence on this vote.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 3: Faucet & Voting Power Center -->
+    <section class="tab-pane" id="faucetTab" style="display: none;">
+      <div class="section-header">
+        <h2 class="section-title">💧 BotChain Testnet Faucet & Voting Power</h2>
+        <span style="font-size: 13px; color: var(--text-muted);">Get VOX governance tokens and activate your voice</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Left: Faucet Claim Card -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 28px;">
+          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <span>🎁 Claim 1,000 VOX Test Tokens</span>
+          </h3>
+          <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">
+            Claim free governance tokens directly from the smart contract on BotChain Testnet. The contract will automatically self-delegate voting power to your wallet so you can vote immediately!
+          </p>
+
+          <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 18px; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px;">
+              <span style="color: var(--text-muted);">Claim Amount:</span>
+              <strong style="color: var(--accent-cyan); font-family: var(--font-mono);">1,000 VOX</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px;">
+              <span style="color: var(--text-muted);">Cooldown:</span>
+              <span>24 hours per wallet</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px;">
+              <span style="color: var(--text-muted);">Network:</span>
+              <span>BotChain Testnet (Chain ID 968)</span>
+            </div>
+          </div>
+
+          <button class="btn-primary" id="claimFaucetBtn" style="width: 100%; justify-content: center; padding: 14px 20px;">
+            💧 Claim 1,000 VOX Tokens On-Chain
+          </button>
+        </div>
+
+        <!-- Right: Delegation & Voting Power Management -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 28px;">
+          <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">
+            🗳️ Voting Power & Delegation
+          </h3>
+          <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 20px;">
+            Under the ERC20Votes standard, holding tokens alone does not grant voting power until you delegate them (either to yourself or a trusted representative).
+          </p>
+
+          <div class="form-group">
+            <label class="form-label">Delegate Voting Power To:</label>
+            <input type="text" class="form-input" id="delegateAddressInput" placeholder="Address (0x...) or click Self" />
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 14px;">
+            <button class="btn-secondary" id="delegateSelfBtn" style="flex: 1; justify-content: center;">
+              👤 Delegate to Self
+            </button>
+            <button class="btn-primary" id="executeDelegateBtn" style="flex: 1; justify-content: center;">
+              ✍️ Sign Delegation
+            </button>
+          </div>
+
+          <div class="verification-box" style="margin-top: 24px;">
+            <div class="verification-icon">ℹ️</div>
+            <div class="verification-text">
+              <strong>Need native tBOT for gas fees?</strong>
+              BotChain testnet transactions require small amounts of tBOT gas. Visit the official faucet at <a href="https://faucet.botchain.ai/basic" target="_blank" rel="noopener noreferrer">faucet.botchain.ai ↗</a>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: Vox Assistant (AI Governance Copilot) -->
+    <section class="tab-pane" id="assistantTab" style="display: none;">
+      <div class="section-header">
+        <h2 class="section-title">
+          <span>✨ Vox Assistant</span>
+          <span class="chain-badge" style="background: rgba(157, 78, 221, 0.15); color: #c77dff; border-color: rgba(157, 78, 221, 0.3);">
+            Intelligent Governance Copilot
+          </span>
+        </h2>
+        <span style="font-size: 12px; color: var(--text-muted);">
+          Auditable AI • Read-Only • Zero Private Key Access
+        </span>
+      </div>
+
+      <div class="copilot-container">
+        <!-- AI Safety Banner -->
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(157, 78, 221, 0.08); border: 1px solid rgba(157, 78, 221, 0.25); border-radius: var(--radius-md); padding: 12px 18px; margin-bottom: 20px; font-size: 12px;">
+          <div>
+            🛡️ <strong>AI Governance Boundary:</strong> Vox Assistant translates technical proposals, summarizes discussions, and answers questions using verified on-chain data. It <em>never</em> casts votes, determines outcomes, or accesses keys.
+          </div>
+          <span style="font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">Source of Truth: BotChain</span>
+        </div>
+
+        <!-- Quick Questions Chips -->
+        <div class="quick-prompts">
+          <button class="quick-prompt-chip" data-prompt="Am I eligible to vote on current proposals?">
+            ❓ Am I eligible to vote?
+          </button>
+          <button class="quick-prompt-chip" data-prompt="How much voting power does my connected wallet have?">
+            ⚡ What is my voting power?
+          </button>
+          <button class="quick-prompt-chip" data-prompt="Explain Proposal #1 in simple, beginner-friendly terms.">
+            📖 Explain Proposal #1
+          </button>
+          <button class="quick-prompt-chip" data-prompt="What happens if I vote Against a proposal?">
+            ⚖️ What happens if I vote Against?
+          </button>
+          <button class="quick-prompt-chip" data-prompt="How does the snapshot voting power checkpoint work?">
+            🔒 How does snapshotting work?
+          </button>
+        </div>
+
+        <!-- Chat History -->
+        <div class="chat-box" id="assistantChatBox">
+          <div class="chat-bubble assistant">
+            <div class="ai-badge" style="margin-bottom: 6px;">Vox Assistant</div>
+            Hello! I am your AI governance copilot for VoxDAO on BotChain. I can explain proposals in plain language, check your voting eligibility from verified on-chain state, summarize debates, or help you draft new proposals. How can I assist you today?
+          </div>
+        </div>
+
+        <!-- Chat Input Form -->
+        <form id="assistantChatForm" style="display: flex; gap: 12px;">
+          <input type="text" class="form-input" id="assistantChatInput" placeholder="Ask anything about proposals, eligibility, or governance rules..." style="flex: 1;" />
+          <button type="submit" class="btn-ai" id="assistantSendBtn" style="padding: 12px 24px;">
+            Send Query ✨
+          </button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Proposal Detail Modal -->
+  <div class="modal-overlay" id="proposalModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="category-tag" id="modalCategory">Treasury</span>
+          <span class="status-badge active" id="modalStatusBadge">Active</span>
+          <span style="font-size: 13px; color: var(--text-muted); font-family: var(--font-mono);" id="modalProposalId">#1</span>
+        </div>
+        <button class="close-btn" id="closeModalBtn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 12px;" id="modalTitle">Proposal Title</h2>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">
+          <span>Proposer: <a href="#" target="_blank" id="modalProposerLink" style="color: var(--accent-cyan); font-family: var(--font-mono);">0x...</a></span>
+          <span>Snapshot Block: <strong id="modalSnapshotBlock">...</strong></span>
+          <span>Voting Ends: <strong id="modalEndTime">...</strong></span>
+        </div>
+
+        <!-- Description -->
+        <div style="background: rgba(0, 0, 0, 0.25); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px; font-size: 14px; line-height: 1.7; white-space: pre-wrap;" id="modalDescription">
+          Proposal description details...
+        </div>
+
+        <!-- Execution Action details if present -->
+        <div id="modalActionSection" style="display: none; background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.2); border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;">
+          <div style="font-weight: 700; color: var(--accent-cyan); font-size: 13px; margin-bottom: 6px;">⚡ On-Chain Execution Action:</div>
+          <div style="font-size: 13px;">Target: <code id="modalActionTarget" style="font-family: var(--font-mono); color: var(--text-main);">0x...</code></div>
+          <div style="font-size: 13px;">Value: <strong id="modalActionValue" style="color: var(--accent-emerald);">0 BOT</strong></div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" id="modalActionStatus">Status: Not executed yet</div>
+        </div>
+
+        <!-- AI Assistant In-Modal Quick Summary -->
+        <div class="ai-insight-box">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div class="ai-badge">✨ Vox Assistant — Objective Analysis</div>
+            <button class="btn-secondary" id="modalSummarizeAiBtn" style="font-size: 11px; padding: 4px 10px;">
+              Explain This Proposal
+            </button>
+          </div>
+          <div id="modalAiExplanation" style="font-size: 13px; color: var(--text-main); margin-top: 10px; line-height: 1.6;">
+            Click "Explain This Proposal" to generate a neutral breakdown of what is being proposed, why, potential benefits, and potential risks.
+          </div>
+          <div class="ai-safety-note">
+            ⚠️ AI analysis is purely informational. The blockchain records and enforces outcomes. You make your own decision.
+          </div>
+        </div>
+
+        <!-- Live Votes & Quorum Breakdown -->
+        <div style="margin: 24px 0;">
+          <h4 style="font-size: 14px; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; color: var(--text-muted);">
+            On-Chain Vote Tally
+          </h4>
+
+          <div class="vote-bar-container" style="height: 14px;">
+            <div class="vote-bar-segment segment-for" id="modalBarFor" style="width: 0%;"></div>
+            <div class="vote-bar-segment segment-against" id="modalBarAgainst" style="width: 0%;"></div>
+            <div class="vote-bar-segment segment-abstain" id="modalBarAbstain" style="width: 0%;"></div>
+          </div>
+
+          <div class="vote-stats-row" style="margin-top: 10px;">
+            <span class="vote-stat dot-for">✅ For: <strong id="modalVotesFor">0 VOX</strong> (<span id="modalPctFor">0%</span>)</span>
+            <span class="vote-stat dot-against">❌ Against: <strong id="modalVotesAgainst">0 VOX</strong> (<span id="modalPctAgainst">0%</span>)</span>
+            <span class="vote-stat dot-abstain">⚪ Abstain: <strong id="modalVotesAbstain">0 VOX</strong> (<span id="modalPctAbstain">0%</span>)</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-top: 12px;">
+            <span>Quorum Requirement: <strong id="modalQuorumReq">500 VOX</strong></span>
+            <span>Total Voters: <strong id="modalTotalVoters">0</strong></span>
+            <span>Quorum Status: <strong id="modalQuorumStatus" style="color: var(--accent-amber);">Pending</strong></span>
+          </div>
+        </div>
+
+        <!-- User Voting Box -->
+        <div class="voting-box" id="modalVotingBox">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <h4 style="font-size: 15px; font-weight: 700;">Cast Your On-Chain Vote</h4>
+            <div style="font-size: 13px;" id="modalUserEligibleNotice">
+              Your snapshot power: <strong style="color: var(--accent-cyan);" id="modalUserSnapshotPower">...</strong>
+            </div>
+          </div>
+
+          <div class="voting-options-grid">
+            <button type="button" class="vote-opt-btn" data-vote="1" id="btnVoteFor">
+              <span style="font-size: 20px;">✅</span>
+              <span>Vote FOR</span>
+            </button>
+            <button type="button" class="vote-opt-btn" data-vote="0" id="btnVoteAgainst">
+              <span style="font-size: 20px;">❌</span>
+              <span>Vote AGAINST</span>
+            </button>
+            <button type="button" class="vote-opt-btn" data-vote="2" id="btnVoteAbstain">
+              <span style="font-size: 20px;">⚪</span>
+              <span>ABSTAIN</span>
+            </button>
+          </div>
+
+          <div class="form-group" style="margin-top: 14px;">
+            <input type="text" class="form-input" id="voteReasonInput" placeholder="Optional: Public reason recorded on-chain..." />
+          </div>
+
+          <button class="btn-primary" id="confirmVoteBtn" style="width: 100%; justify-content: center; padding: 14px;" disabled>
+            Select an Option to Vote
+          </button>
+
+          <!-- Vote Receipt Card if already voted -->
+          <div id="modalUserReceiptCard" style="display: none; background: rgba(0, 230, 118, 0.08); border: 1px solid rgba(0, 230, 118, 0.3); border-radius: var(--radius-md); padding: 14px; margin-top: 14px; font-size: 13px;">
+            <div style="font-weight: 700; color: var(--accent-emerald); margin-bottom: 4px;">✓ Vote Recorded on BotChain</div>
+            <div id="modalUserReceiptText">You voted FOR with 10,000 VOX voting power.</div>
+          </div>
+        </div>
+
+        <!-- Finalize / Execute Actions -->
+        <div id="modalLifecycleActions" style="margin-top: 20px; display: flex; gap: 12px;">
+          <button class="btn-secondary" id="modalFinalizeBtn" style="display: none; flex: 1; justify-content: center;">
+            🔒 Finalize Proposal Outcome
+          </button>
+          <button class="btn-primary" id="modalExecuteBtn" style="display: none; flex: 1; justify-content: center; background: var(--accent-emerald);">
+            ⚡ Execute Proposal Action
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div>
+        <strong>VoxDAO</strong> — Built for the <strong>BotChain</strong> Ecosystem
+        <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">
+          Chain ID 968 (Testnet) • Chain ID 677 (Mainnet) • Zero-dependency on-chain verification
+        </div>
+      </div>
+      <div style="display: flex; gap: 16px;">
+        <a href="https://scan.bohr.life" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan); text-decoration: none;">BotScan Testnet ↗</a>
+        <a href="https://dev-docs.botchain.ai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan); text-decoration: none;">BotChain Dev Docs ↗</a>
+        <a href="https://faucet.botchain.ai" target="_blank" rel="noopener noreferrer" style="color: var(--accent-cyan); text-decoration: none;">Official Faucet ↗</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="vendor/ethers.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

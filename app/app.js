@@ -203,28 +203,161 @@ async function switchOrAddBotChainNetwork() {
 
 function updateWalletUI() {
   const btn = document.getElementById("connectWalletBtn");
+  const quickDiscBtn = document.getElementById("quickDisconnectBtn");
   const netDot = document.getElementById("statusDot");
   const netName = document.getElementById("networkNameDisplay");
 
   if (state.userAddress) {
-    btn.innerHTML = `<span>${truncateAddress(state.userAddress)}</span>`;
-    btn.classList.remove("btn-primary");
-    btn.classList.add("btn-secondary");
+    if (btn) {
+      btn.innerHTML = `<span>${truncateAddress(state.userAddress)}</span> <span style="font-size: 10px; margin-left: 4px; opacity: 0.7;">▾</span>`;
+      btn.classList.remove("btn-primary");
+      btn.classList.add("btn-secondary");
+      btn.title = "View Account & Options";
+      btn.style.display = "inline-flex";
+    }
+
+    if (quickDiscBtn) {
+      quickDiscBtn.style.display = "inline-flex";
+    }
+
+    // Update Dropdown Elements
+    const fullAddrEl = document.getElementById("dropdownFullAddress");
+    if (fullAddrEl) fullAddrEl.innerText = state.userAddress;
+
+    const explorerLink = document.getElementById("explorerAddressLink");
+    if (explorerLink) {
+      explorerLink.href = `https://scan.bohr.life/address/${state.userAddress}`;
+    }
+
+    const nativeEl = document.getElementById("dropdownNativeBalance");
+    if (nativeEl) nativeEl.innerText = `${formatNumber(state.userNativeBalance || 0)} BOT`;
+
+    const powerEl = document.getElementById("dropdownVotingPower");
+    if (powerEl) powerEl.innerText = `${formatNumber(state.userVotingPower || 0)} VOX`;
 
     if (state.userChainId === BOTCHAIN_TESTNET.chainId) {
-      netDot.className = "status-dot";
-      netName.innerText = "BotChain (968)";
+      if (netDot) netDot.className = "status-dot";
+      if (netName) netName.innerText = "BotChain (968)";
     } else {
-      netDot.className = "status-dot warning";
-      netName.innerText = `Chain ${state.userChainId} (Switch)`;
+      if (netDot) netDot.className = "status-dot warning";
+      if (netName) netName.innerText = `Chain ${state.userChainId} (Switch)`;
     }
   } else {
-    btn.innerHTML = `<span>Connect Wallet</span>`;
-    btn.classList.add("btn-primary");
-    btn.classList.remove("btn-secondary");
-    netDot.className = "status-dot";
-    netName.innerText = "BotChain (968)";
+    if (btn) {
+      btn.innerHTML = `<span>Connect Wallet</span>`;
+      btn.classList.add("btn-primary");
+      btn.classList.remove("btn-secondary");
+      btn.title = "Connect your Web3 wallet";
+      const isAppMode = document.body && document.body.classList.contains("app-mode");
+      btn.style.display = isAppMode ? "inline-flex" : "none";
+    }
+
+    if (quickDiscBtn) {
+      quickDiscBtn.style.display = "none";
+    }
+
+    if (netDot) netDot.className = "status-dot";
+    if (netName) netName.innerText = "BotChain (968)";
+
+    closeWalletDropdown();
   }
+}
+
+function toggleWalletDropdown(forceState) {
+  const dropdown = document.getElementById("walletAccountDropdown");
+  if (!dropdown) return;
+
+  const isOpen = forceState !== undefined ? forceState : dropdown.style.display === "block";
+  dropdown.style.display = isOpen ? "none" : "block";
+
+  if (!isOpen && state.userAddress) {
+    const fullAddrEl = document.getElementById("dropdownFullAddress");
+    if (fullAddrEl) fullAddrEl.innerText = state.userAddress;
+
+    const explorerLink = document.getElementById("explorerAddressLink");
+    if (explorerLink) {
+      explorerLink.href = `https://scan.bohr.life/address/${state.userAddress}`;
+    }
+
+    const nativeEl = document.getElementById("dropdownNativeBalance");
+    if (nativeEl) nativeEl.innerText = `${formatNumber(state.userNativeBalance || 0)} BOT`;
+
+    const powerEl = document.getElementById("dropdownVotingPower");
+    if (powerEl) powerEl.innerText = `${formatNumber(state.userVotingPower || 0)} VOX`;
+  }
+}
+
+function closeWalletDropdown() {
+  const dropdown = document.getElementById("walletAccountDropdown");
+  if (dropdown) dropdown.style.display = "none";
+}
+window.closeWalletDropdown = closeWalletDropdown;
+
+function copyConnectedAddress() {
+  if (!state.userAddress) return;
+  navigator.clipboard.writeText(state.userAddress).then(() => {
+    const copyBtn = document.getElementById("copyAddressBtn");
+    if (copyBtn) {
+      const orig = copyBtn.innerText;
+      copyBtn.innerText = "Copied!";
+      setTimeout(() => { copyBtn.innerText = orig; }, 2000);
+    }
+    showToast("success", "Address Copied", "Wallet address copied to clipboard.");
+  }).catch(() => {
+    showToast("info", "Connected Address", state.userAddress);
+  });
+}
+
+async function switchAccount() {
+  if (!window.ethereum) {
+    showToast("error", "No Wallet", "Ethereum provider not found.");
+    return;
+  }
+  closeWalletDropdown();
+  try {
+    showToast("loading", "Switching Account", "Please select account in your wallet...");
+    await window.ethereum.request({
+      method: "wallet_requestPermissions",
+      params: [{ eth_accounts: {} }],
+    });
+    await connectWallet();
+  } catch (err) {
+    console.log("Switch account prompt handled:", err);
+    await connectWallet();
+  }
+}
+
+function disconnectWallet() {
+  state.userAddress = null;
+  state.signer = null;
+  state.userNativeBalance = "0";
+  state.userVoxBalance = "0";
+  state.userVotingPower = "0";
+  state.userDelegatee = null;
+
+  try {
+    const readOnlyProvider = new ethers.JsonRpcProvider(BOTCHAIN_TESTNET.rpcUrl);
+    state.provider = readOnlyProvider;
+    state.daoContract = new ethers.Contract(CONTRACT_ADDRESSES.dao, VOX_DAO_ABI, readOnlyProvider);
+    state.tokenContract = new ethers.Contract(CONTRACT_ADDRESSES.token, VOX_TOKEN_ABI, readOnlyProvider);
+  } catch (err) {
+    console.error("Provider reset error:", err);
+  }
+
+  closeWalletDropdown();
+  updateWalletUI();
+
+  // Reset user data in the DOM
+  const metricPower = document.getElementById("metricUserPower");
+  if (metricPower) metricPower.innerText = "0 VOX";
+
+  const metricDelegate = document.getElementById("metricUserDelegate");
+  if (metricDelegate) metricDelegate.innerText = "Not Connected";
+
+  const delegateInput = document.getElementById("delegateAddressInput");
+  if (delegateInput) delegateInput.placeholder = "Address (0x...) or click Self";
+
+  showToast("info", "Wallet Disconnected", "Active wallet disconnected successfully.");
 }
 
 async function refreshUserData() {
@@ -255,6 +388,13 @@ async function refreshUserData() {
     
     document.getElementById("metricUserDelegate").innerText = delegateText;
     document.getElementById("delegateAddressInput").placeholder = state.userAddress;
+
+    // Update Dropdown Values
+    const nativeEl = document.getElementById("dropdownNativeBalance");
+    if (nativeEl) nativeEl.innerText = `${formatNumber(state.userNativeBalance)} BOT`;
+
+    const powerEl = document.getElementById("dropdownVotingPower");
+    if (powerEl) powerEl.innerText = `${formatNumber(state.userVotingPower)} VOX`;
   } catch (err) {
     console.error("Error refreshing user balances:", err);
   }
@@ -1068,8 +1208,57 @@ function setupEventListeners() {
     showLandingView();
   });
 
-  // Wallet Connect
-  document.getElementById("connectWalletBtn").addEventListener("click", connectWallet);
+  // Wallet Connect / Account Dropdown Toggle
+  document.getElementById("connectWalletBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (state.userAddress) {
+      toggleWalletDropdown();
+    } else {
+      connectWallet();
+    }
+  });
+
+  // Quick Disconnect Button in Header
+  document.getElementById("quickDisconnectBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    disconnectWallet();
+  });
+
+  // Dropdown Close Button
+  document.getElementById("closeWalletDropdownBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    closeWalletDropdown();
+  });
+
+  // Dropdown Copy Address Button
+  document.getElementById("copyAddressBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    copyConnectedAddress();
+  });
+
+  // Dropdown Switch Account Button
+  document.getElementById("switchAccountBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    switchAccount();
+  });
+
+  // Dropdown Disconnect Button
+  document.getElementById("disconnectWalletBtn")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    disconnectWallet();
+  });
+
+  // Close dropdown on outside click
+  document.addEventListener("click", (e) => {
+    const dropdown = document.getElementById("walletAccountDropdown");
+    const wrapper = document.getElementById("walletWrapper");
+    if (dropdown && dropdown.style.display === "block") {
+      if (wrapper && !wrapper.contains(e.target)) {
+        closeWalletDropdown();
+      }
+    }
+  });
+
   document.getElementById("networkIndicator").addEventListener("click", switchOrAddBotChainNetwork);
 
   // Refresh Button
@@ -1137,8 +1326,7 @@ function setupEventListeners() {
         updateWalletUI();
         await refreshUserData();
       } else {
-        state.userAddress = null;
-        updateWalletUI();
+        disconnectWallet();
       }
     });
 
@@ -1158,13 +1346,16 @@ function showLandingView() {
   const appNav = document.getElementById("appNavTabs");
   const launchBtn = document.getElementById("launchAppTopBtn");
   const connectBtn = document.getElementById("connectWalletBtn");
+  const quickDiscBtn = document.getElementById("quickDisconnectBtn");
 
   if (landing) landing.style.display = "block";
   if (app) app.style.display = "none";
   if (landingNav) landingNav.style.display = "flex";
   if (appNav) appNav.style.display = "none";
   if (launchBtn) launchBtn.style.display = "inline-flex";
-  if (connectBtn) connectBtn.style.display = "none";
+  if (connectBtn) connectBtn.style.display = state.userAddress ? "inline-flex" : "none";
+  if (quickDiscBtn) quickDiscBtn.style.display = state.userAddress ? "inline-flex" : "none";
+  closeWalletDropdown();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -1176,6 +1367,7 @@ function showAppView(defaultTab = "proposalsTab") {
   const appNav = document.getElementById("appNavTabs");
   const launchBtn = document.getElementById("launchAppTopBtn");
   const connectBtn = document.getElementById("connectWalletBtn");
+  const quickDiscBtn = document.getElementById("quickDisconnectBtn");
 
   if (landing) landing.style.display = "none";
   if (app) app.style.display = "block";
@@ -1183,6 +1375,8 @@ function showAppView(defaultTab = "proposalsTab") {
   if (appNav) appNav.style.display = "flex";
   if (launchBtn) launchBtn.style.display = "none";
   if (connectBtn) connectBtn.style.display = "inline-flex";
+  if (quickDiscBtn) quickDiscBtn.style.display = state.userAddress ? "inline-flex" : "none";
+  closeWalletDropdown();
   switchTab(defaultTab);
   window.scrollTo({ top: 0, behavior: "smooth" });
 }

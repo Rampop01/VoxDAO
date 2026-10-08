@@ -24,12 +24,17 @@
       var appNav = document.getElementById("appNavTabs");
       var launchBtn = document.getElementById("launchAppTopBtn");
       var connectBtn = document.getElementById("connectWalletBtn");
+      var quickDiscBtn = document.getElementById("quickDisconnectBtn");
+      var isConnected = window.state && window.state.userAddress;
+
       if (landing) landing.style.display = "block";
       if (app) app.style.display = "none";
       if (landingNav) landingNav.style.display = "flex";
       if (appNav) appNav.style.display = "none";
       if (launchBtn) launchBtn.style.display = "inline-flex";
-      if (connectBtn) connectBtn.style.display = "none";
+      if (connectBtn) connectBtn.style.display = isConnected ? "inline-flex" : "none";
+      if (quickDiscBtn) quickDiscBtn.style.display = isConnected ? "inline-flex" : "none";
+      if (window.closeWalletDropdown) window.closeWalletDropdown();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
@@ -42,12 +47,17 @@
       var appNav = document.getElementById("appNavTabs");
       var launchBtn = document.getElementById("launchAppTopBtn");
       var connectBtn = document.getElementById("connectWalletBtn");
+      var quickDiscBtn = document.getElementById("quickDisconnectBtn");
+      var isConnected = window.state && window.state.userAddress;
+
       if (landing) landing.style.display = "none";
       if (app) app.style.display = "block";
       if (landingNav) landingNav.style.display = "none";
       if (appNav) appNav.style.display = "flex";
       if (launchBtn) launchBtn.style.display = "none";
       if (connectBtn) connectBtn.style.display = "inline-flex";
+      if (quickDiscBtn) quickDiscBtn.style.display = isConnected ? "inline-flex" : "none";
+      if (window.closeWalletDropdown) window.closeWalletDropdown();
       if (window.switchTab) {
         window.switchTab(tabId);
       } else {
@@ -119,9 +129,62 @@
         <button class="btn-primary" id="launchAppTopBtn" onclick="showAppView('proposalsTab')">
           Launch App
         </button>
-        <button class="btn-primary" id="connectWalletBtn" style="display: none;">
-          Connect Wallet
-        </button>
+
+        <!-- Wallet Container with Account Dropdown -->
+        <div class="wallet-wrapper" id="walletWrapper">
+          <button class="btn-primary" id="connectWalletBtn" style="display: none;">
+            Connect Wallet
+          </button>
+          <button class="btn-disconnect-quick" id="quickDisconnectBtn" style="display: none;" title="Disconnect Wallet">
+            Disconnect
+          </button>
+
+          <!-- Connected Account Dropdown Menu -->
+          <div class="wallet-dropdown" id="walletAccountDropdown" style="display: none;">
+            <div class="wallet-dropdown-header">
+              <div class="wallet-dropdown-status">
+                <span class="status-dot"></span>
+                <span>BotChain (968)</span>
+              </div>
+              <button class="wallet-dropdown-close" id="closeWalletDropdownBtn" title="Close Menu">×</button>
+            </div>
+
+            <div class="wallet-dropdown-address-box">
+              <div class="wallet-dropdown-address-label">Connected Wallet</div>
+              <div class="wallet-dropdown-address-val" id="dropdownFullAddress">0x...</div>
+              <div class="wallet-dropdown-address-actions">
+                <button class="dropdown-mini-btn" id="copyAddressBtn" title="Copy to clipboard">
+                  Copy Address
+                </button>
+                <a href="#" target="_blank" rel="noopener noreferrer" class="dropdown-mini-btn" id="explorerAddressLink" style="text-decoration: none;">
+                  BotScan ↗
+                </a>
+              </div>
+            </div>
+
+            <div class="wallet-dropdown-balances">
+              <div class="dropdown-balance-item">
+                <span class="dropdown-balance-label">Native Balance</span>
+                <span class="dropdown-balance-val" id="dropdownNativeBalance">0.00 BOT</span>
+              </div>
+              <div class="dropdown-balance-item">
+                <span class="dropdown-balance-label">Voting Power</span>
+                <span class="dropdown-balance-val" id="dropdownVotingPower">0.00 VOX</span>
+              </div>
+            </div>
+
+            <div class="wallet-dropdown-divider"></div>
+
+            <div class="wallet-dropdown-actions">
+              <button class="btn-secondary dropdown-action-btn" id="switchAccountBtn">
+                Switch Account
+              </button>
+              <button class="btn-disconnect dropdown-action-btn" id="disconnectWalletBtn">
+                Disconnect Wallet
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </header>

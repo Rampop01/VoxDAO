@@ -26,7 +26,6 @@
       var appNav = document.getElementById("appNavTabs");
       var launchBtn = document.getElementById("launchAppTopBtn");
       var connectBtn = document.getElementById("connectWalletBtn");
-      var quickDiscBtn = document.getElementById("quickDisconnectBtn");
       var isConnected = window.state && window.state.userAddress;
 
       if (landing) landing.style.display = "block";
@@ -35,7 +34,6 @@
       if (appNav) appNav.style.display = "none";
       if (launchBtn) launchBtn.style.display = "inline-flex";
       if (connectBtn) connectBtn.style.display = isConnected ? "inline-flex" : "none";
-      if (quickDiscBtn) quickDiscBtn.style.display = isConnected ? "inline-flex" : "none";
       if (window.closeWalletDropdown) window.closeWalletDropdown();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -49,8 +47,6 @@
       var appNav = document.getElementById("appNavTabs");
       var launchBtn = document.getElementById("launchAppTopBtn");
       var connectBtn = document.getElementById("connectWalletBtn");
-      var quickDiscBtn = document.getElementById("quickDisconnectBtn");
-      var isConnected = window.state && window.state.userAddress;
 
       if (landing) landing.style.display = "none";
       if (app) app.style.display = "block";
@@ -58,7 +54,6 @@
       if (appNav) appNav.style.display = "flex";
       if (launchBtn) launchBtn.style.display = "none";
       if (connectBtn) connectBtn.style.display = "inline-flex";
-      if (quickDiscBtn) quickDiscBtn.style.display = isConnected ? "inline-flex" : "none";
       if (window.closeWalletDropdown) window.closeWalletDropdown();
       if (window.switchTab) {
         window.switchTab(tabId);
@@ -95,9 +90,6 @@
 
       <!-- App Mode Tabs (Visible in Governance App) -->
       <nav class="nav-tabs" id="appNavTabs" style="display: none;">
-        <button class="nav-tab-btn" id="navReturnLandingBtn" onclick="showLandingView()">
-          <span>Overview</span>
-        </button>
         <button class="nav-tab-btn active" data-tab="proposalsTab" id="tabBtnProposals" onclick="switchTab('proposalsTab')">
           <span>Proposals</span>
         </button>
@@ -124,10 +116,6 @@
 
       <!-- Header Actions -->
       <div class="header-actions">
-        <div class="network-pill" id="networkIndicator" title="Click to switch to BotChain Testnet">
-          <span class="status-dot" id="statusDot"></span>
-          <span id="networkNameDisplay">BotChain (968)</span>
-        </div>
         <button class="btn-primary" id="launchAppTopBtn" onclick="showAppView('proposalsTab')">
           Launch App
         </button>
@@ -136,9 +124,6 @@
         <div class="wallet-wrapper" id="walletWrapper">
           <button class="btn-primary" id="connectWalletBtn" style="display: none;">
             Connect Wallet
-          </button>
-          <button class="btn-disconnect-quick" id="quickDisconnectBtn" style="display: none;" title="Disconnect Wallet">
-            Disconnect
           </button>
 
           <!-- Connected Account Dropdown Menu -->

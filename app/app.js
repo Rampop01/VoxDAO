@@ -203,9 +203,6 @@ async function switchOrAddBotChainNetwork() {
 
 function updateWalletUI() {
   const btn = document.getElementById("connectWalletBtn");
-  const quickDiscBtn = document.getElementById("quickDisconnectBtn");
-  const netDot = document.getElementById("statusDot");
-  const netName = document.getElementById("networkNameDisplay");
 
   if (state.userAddress) {
     if (btn) {
@@ -214,10 +211,6 @@ function updateWalletUI() {
       btn.classList.add("btn-secondary");
       btn.title = "View Account & Options";
       btn.style.display = "inline-flex";
-    }
-
-    if (quickDiscBtn) {
-      quickDiscBtn.style.display = "inline-flex";
     }
 
     // Update Dropdown Elements
@@ -234,14 +227,6 @@ function updateWalletUI() {
 
     const powerEl = document.getElementById("dropdownVotingPower");
     if (powerEl) powerEl.innerText = `${formatNumber(state.userVotingPower || 0)} VOX`;
-
-    if (state.userChainId === BOTCHAIN_TESTNET.chainId) {
-      if (netDot) netDot.className = "status-dot";
-      if (netName) netName.innerText = "BotChain (968)";
-    } else {
-      if (netDot) netDot.className = "status-dot warning";
-      if (netName) netName.innerText = `Chain ${state.userChainId} (Switch)`;
-    }
   } else {
     if (btn) {
       btn.innerHTML = `<span>Connect Wallet</span>`;
@@ -251,13 +236,6 @@ function updateWalletUI() {
       const isAppMode = document.body && document.body.classList.contains("app-mode");
       btn.style.display = isAppMode ? "inline-flex" : "none";
     }
-
-    if (quickDiscBtn) {
-      quickDiscBtn.style.display = "none";
-    }
-
-    if (netDot) netDot.className = "status-dot";
-    if (netName) netName.innerText = "BotChain (968)";
 
     closeWalletDropdown();
   }
@@ -1218,12 +1196,6 @@ function setupEventListeners() {
     }
   });
 
-  // Quick Disconnect Button in Header
-  document.getElementById("quickDisconnectBtn")?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    disconnectWallet();
-  });
-
   // Dropdown Close Button
   document.getElementById("closeWalletDropdownBtn")?.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -1259,7 +1231,7 @@ function setupEventListeners() {
     }
   });
 
-  document.getElementById("networkIndicator").addEventListener("click", switchOrAddBotChainNetwork);
+  document.getElementById("networkIndicator")?.addEventListener("click", switchOrAddBotChainNetwork);
 
   // Refresh Button
   document.getElementById("refreshStatsBtn").addEventListener("click", async () => {
@@ -1346,7 +1318,6 @@ function showLandingView() {
   const appNav = document.getElementById("appNavTabs");
   const launchBtn = document.getElementById("launchAppTopBtn");
   const connectBtn = document.getElementById("connectWalletBtn");
-  const quickDiscBtn = document.getElementById("quickDisconnectBtn");
 
   if (landing) landing.style.display = "block";
   if (app) app.style.display = "none";
@@ -1354,7 +1325,6 @@ function showLandingView() {
   if (appNav) appNav.style.display = "none";
   if (launchBtn) launchBtn.style.display = "inline-flex";
   if (connectBtn) connectBtn.style.display = state.userAddress ? "inline-flex" : "none";
-  if (quickDiscBtn) quickDiscBtn.style.display = state.userAddress ? "inline-flex" : "none";
   closeWalletDropdown();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -1367,7 +1337,6 @@ function showAppView(defaultTab = "proposalsTab") {
   const appNav = document.getElementById("appNavTabs");
   const launchBtn = document.getElementById("launchAppTopBtn");
   const connectBtn = document.getElementById("connectWalletBtn");
-  const quickDiscBtn = document.getElementById("quickDisconnectBtn");
 
   if (landing) landing.style.display = "none";
   if (app) app.style.display = "block";
@@ -1375,7 +1344,6 @@ function showAppView(defaultTab = "proposalsTab") {
   if (appNav) appNav.style.display = "flex";
   if (launchBtn) launchBtn.style.display = "none";
   if (connectBtn) connectBtn.style.display = "inline-flex";
-  if (quickDiscBtn) quickDiscBtn.style.display = state.userAddress ? "inline-flex" : "none";
   closeWalletDropdown();
   switchTab(defaultTab);
   window.scrollTo({ top: 0, behavior: "smooth" });

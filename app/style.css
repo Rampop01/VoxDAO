@@ -182,6 +182,22 @@ body.app-mode #connectWalletBtn {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
+.brand-logo-img {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-sheen);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  object-fit: cover;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.brand-wrapper:hover .brand-logo-img {
+  transform: scale(1.06);
+  border-color: var(--chrome-pure);
+  box-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
+}
+
 .brand-text h1 {
   font-size: 18px;
   font-weight: 700;
